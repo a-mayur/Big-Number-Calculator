@@ -7,7 +7,7 @@ it computes in under half a second.
 <p align="center">
   <img src="docs/screenshots/home.png" width="220" alt="Start screen with the three inputs and operation groups">
   <img src="docs/screenshots/factorial.png" width="220" alt="1000 factorial, 2,568 digits">
-  <img src="docs/screenshots/gcd.png" width="220" alt="gcd of 1071 and 462 with the Bézout identity">
+  <img src="docs/screenshots/gcd.png" width="220" alt="gcd of 1071 and 462, also written as a sum of the two numbers">
   <img src="docs/screenshots/dark-next-prime.png" width="220" alt="Dark theme: the first prime after a googol">
 </p>
 
@@ -17,10 +17,10 @@ it computes in under half a second.
 |---|---|
 | Basic | Add, subtract, multiply, divide (100 decimal places), compare |
 | Whole numbers | x mod y, xʸ mod z (modular power), modular inverse, left and right bit shifts |
-| Primes & divisors | Primality test, next and previous prime, gcd with Bézout coefficients, lcm |
+| Primes & divisors | Primality test, next and previous prime, gcd (also shown as a sum of x and y, e.g. 1071 × (−3) + 462 × 7 = 21), lcm |
 | Powers & more | xʸ (exact for whole exponents), x², x³, x!, natural logarithm |
 | Counting & sequences | Combinations C(x, y), permutations P(x, y), Fibonacci and Catalan numbers |
-| Bases & checks | Base 2–36 conversion, bit view with two's complement, check digits for cards (Luhn), ISBN-10/13 and IBAN |
+| Bases & checks | Base 2–36 conversion, bit view with two's complement, check digits for card numbers and IMEIs, ISBN-10/13 and IBAN |
 
 - **Exact results.** Whole-number powers, factorials and sequences are computed exactly. Results
   that can only be estimated, such as fractional powers and logarithms, start with "≈".

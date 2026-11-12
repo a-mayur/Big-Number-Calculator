@@ -420,7 +420,7 @@ fn paren(i: &Integer) -> String {
 fn gcd(nums: &[Integer]) -> Res<String> {
     if let [a, b] = nums {
         let (g, s, t) = a.extended_gcd(b);
-        return Ok(format!("{g}\n\nBézout: {} × {} + {} × {} = {g}", paren(a), paren(&s), paren(b), paren(&t)));
+        return Ok(format!("{g}\n\nAs a sum of x and y: {} × {} + {} × {} = {g}", paren(a), paren(&s), paren(b), paren(&t)));
     }
     Ok(nums.iter().fold(Natural::ZERO, |acc, n| acc.gcd(n.unsigned_abs())).to_string())
 }
@@ -520,7 +520,7 @@ fn fibonacci(n: u64, c: &Cancel) -> Res<Natural> {
 }
 
 fn bits(n: Integer) -> Res<String> {
-    let tz = |v: &Natural| v.trailing_zeros().map_or("–".into(), |t| t.to_string());
+    let tz = |v: &Natural| v.trailing_zeros().map_or("none".into(), |t| t.to_string());
     if n >= 0 {
         let u = n.unsigned_abs();
         return Ok(format!("Bit length: {}\nOnes: {}\nTrailing zeros: {}", u.significant_bits(), (&u).count_ones(), tz(&u)));
@@ -570,7 +570,7 @@ fn check_digit_text(text: &str) -> Res<String> {
     if b.len() == 13 {
         let sum: u32 = d[..12].iter().enumerate().map(|(i, v)| if i % 2 == 0 { *v } else { v * 3 }).sum();
         let want = (10 - sum % 10) % 10;
-        lines.push(verdict("ISBN-13 / EAN-13", d[12] == want, &want.to_string()));
+        lines.push(verdict("ISBN-13 / barcode (EAN-13)", d[12] == want, &want.to_string()));
     }
     if digits_only && b.len() >= 2 {
         let sum: u32 = d[..d.len() - 1]
@@ -580,7 +580,7 @@ fn check_digit_text(text: &str) -> Res<String> {
             .map(|(i, &v)| if i % 2 == 0 { if v * 2 > 9 { v * 2 - 9 } else { v * 2 } } else { v })
             .sum();
         let want = (10 - sum % 10) % 10;
-        lines.push(verdict("Luhn (cards, IMEI)", d[d.len() - 1] == want, &want.to_string()));
+        lines.push(verdict("Card / IMEI check digit", d[d.len() - 1] == want, &want.to_string()));
     }
     Ok(lines.join("\n"))
 }

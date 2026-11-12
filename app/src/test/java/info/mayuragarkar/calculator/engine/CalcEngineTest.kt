@@ -121,7 +121,7 @@ class CalcEngineTest {
         assertEquals("97", eval(Op.PREV_PRIME, "100"))
         assertEquals("2", eval(Op.PREV_PRIME, "3"))
         assertTrue(fails(Op.PREV_PRIME, "2").contains("no prime"))
-        assertEquals("6\n\nBézout: 12 × (-1) + 18 × 1 = 6", eval(Op.GCD, "12", "18"))
+        assertEquals("6\n\nAs a sum of x and y: 12 × (-1) + 18 × 1 = 6", eval(Op.GCD, "12", "18"))
         assertEquals("6", eval(Op.GCD, "12, 18, 30"))
         assertEquals("60", eval(Op.LCM, "4 6", "10"))
         assertTrue(fails(Op.GCD, "12").contains("at least two"))
@@ -145,15 +145,15 @@ class CalcEngineTest {
         assertEquals("-Z", eval(Op.TO_BASE, "-35", "36"))
         assertTrue(fails(Op.TO_BASE, "10", "1").contains("2 to 36"))
         assertEquals("Bit length: 8\nOnes: 8\nTrailing zeros: 0", eval(Op.BITS, "255"))
-        assertEquals("Bit length: 0\nOnes: 0\nTrailing zeros: –", eval(Op.BITS, "0"))
+        assertEquals("Bit length: 0\nOnes: 0\nTrailing zeros: none", eval(Op.BITS, "0"))
         assertEquals("Two's complement width: 8 bits\nOnes: 8\nTrailing zeros: 0\n\n11111111", eval(Op.BITS, "-1"))
         assertTrue(eval(Op.BITS, "-128").endsWith("\n10000000"))
     }
 
     @Test fun checkDigits() {
-        assertEquals("Luhn (cards, IMEI): valid", eval(Op.CHECK_DIGITS, "79927398713"))
+        assertEquals("Card / IMEI check digit: valid", eval(Op.CHECK_DIGITS, "79927398713"))
         assertTrue(eval(Op.CHECK_DIGITS, "79927398710").contains("should be 3"))
-        assertTrue(eval(Op.CHECK_DIGITS, "978-0-306-40615-7").startsWith("ISBN-13 / EAN-13: valid"))
+        assertTrue(eval(Op.CHECK_DIGITS, "978-0-306-40615-7").startsWith("ISBN-13 / barcode (EAN-13): valid"))
         assertTrue(eval(Op.CHECK_DIGITS, "0-306-40615-2").startsWith("ISBN-10: valid"))
         assertEquals("IBAN: valid", eval(Op.CHECK_DIGITS, "GB82 WEST 1234 5698 7654 32"))
         assertTrue(eval(Op.CHECK_DIGITS, "GB00 WEST 1234 5698 7654 32").contains("should be 82"))
