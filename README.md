@@ -69,8 +69,13 @@ git tag v2.1.0
 git push origin v2.1.0
 ```
 
-The workflow signs with your release key. Add these repository secrets once, under
-Settings → Secrets and variables → Actions:
+If a release for the tag already exists, for example one created in the GitHub web page, the APKs
+are attached to it.
+
+Without signing secrets, the workflow signs with a key generated for that run. Those APKs install
+fine, but each release then has a different key, so a newer one won't install over an older one
+without uninstalling first. To sign every release with your own key, add these repository secrets
+under Settings → Secrets and variables → Actions:
 
 | Secret | Value |
 |---|---|

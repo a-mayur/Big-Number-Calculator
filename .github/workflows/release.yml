@@ -28,22 +28,33 @@ jobs:
           rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
           cargo install cargo-ndk --locked
 
-      - name: Decode signing keystore
+      - name: Prepare signing key
         env:
           SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          if [ -z "$SIGNING_KEYSTORE_BASE64" ]; then
-            echo "::error::Add the SIGNING_* repository secrets described in README.md"
-            exit 1
+          ks="$RUNNER_TEMP/release.jks"
+          if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
+            echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$ks"
+          else
+            echo "::warning::No SIGNING_* secrets set, so these APKs are signed with a one-off key. Add the secrets described in README.md to sign with your own key."
+            STORE_PASSWORD=$(openssl rand -hex 16)
+            echo "::add-mask::$STORE_PASSWORD"
+            KEY_PASSWORD=$STORE_PASSWORD
+            KEY_ALIAS=release
+            keytool -genkeypair -keystore "$ks" -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD" \
+              -alias "$KEY_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Big Number Calculator"
           fi
-          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
-          echo "SIGNING_KEYSTORE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          {
+            echo "SIGNING_KEYSTORE=$ks"
+            echo "SIGNING_STORE_PASSWORD=$STORE_PASSWORD"
+            echo "SIGNING_KEY_ALIAS=$KEY_ALIAS"
+            echo "SIGNING_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
 
       - name: Test and build signed APKs
-        env:
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: ./gradlew testDebugUnitTest assembleRelease -PsplitApks -PversionName="${GITHUB_REF_NAME#v}"
 
       - name: Publish GitHub release
@@ -54,4 +65,11 @@ jobs:
           for abi in arm64-v8a armeabi-v7a x86_64; do
             cp "app/build/outputs/apk/release/app-$abi-release.apk" "dist/BigNumberCalculator-$GITHUB_REF_NAME-$abi.apk"
           done
-          gh release create "$GITHUB_REF_NAME" dist/*.apk --title "$GITHUB_REF_NAME" --generate-notes
+          id=$(gh api "repos/$GITHUB_REPOSITORY/releases" --jq '.[] | [.id, .tag_name] | @tsv' \
+            | awk -v tag="$GITHUB_REF_NAME" '$2 == tag { print $1; exit }')
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$id" -f tag_name="$GITHUB_REF_NAME" -F draft=false > /dev/null
+            gh release upload "$GITHUB_REF_NAME" dist/*.apk --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.apk --title "$GITHUB_REF_NAME" --generate-notes
+          fi
